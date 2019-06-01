@@ -12,6 +12,7 @@
 		A41F9ADD229974FB00AF2C27 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A41F9ADB229974FB00AF2C27 /* Main.storyboard */; };
 		A41F9ADF229974FC00AF2C27 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A41F9ADE229974FC00AF2C27 /* Assets.xcassets */; };
 		A41F9AE2229974FC00AF2C27 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A41F9AE0229974FC00AF2C27 /* LaunchScreen.storyboard */; };
+		A48531B5229A7D300001A21A /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = A48531B4229A7D300001A21A /* GameScene.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		A41F9ADE229974FC00AF2C27 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A41F9AE1229974FC00AF2C27 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A41F9AE3229974FC00AF2C27 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A48531B4229A7D300001A21A /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +62,7 @@
 				A41F9ADE229974FC00AF2C27 /* Assets.xcassets */,
 				A41F9AE0229974FC00AF2C27 /* LaunchScreen.storyboard */,
 				A41F9AE3229974FC00AF2C27 /* Info.plist */,
+				A48531B4229A7D300001A21A /* GameScene.swift */,
 			);
 			path = FlappyBird;
 			sourceTree = "<group>";
@@ -135,6 +138,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A48531B5229A7D300001A21A /* GameScene.swift in Sources */,
 				A41F9ADA229974FB00AF2C27 /* ViewController.swift in Sources */,
 				A41F9AD8229974FB00AF2C27 /* AppDelegate.swift in Sources */,
 			);
@@ -292,7 +296,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = jp.techacademy.TiraTom.FlappyBird;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -310,7 +314,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = jp.techacademy.TiraTom.FlappyBird;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
