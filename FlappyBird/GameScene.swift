@@ -12,6 +12,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var scrollNode: SKNode!
     var wallNode: SKNode!
+    var itemNode: SKNode!
     var bird: SKSpriteNode!
     
     // 衝突判定カテゴリー
@@ -45,11 +46,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         wallNode = SKNode()
         scrollNode.addChild(wallNode)
         
+        // アイテム用のノード
+        itemNode = SKNode()
+        scrollNode.addChild(itemNode)
+        
         // シーンにスプライトを追加
         setupGround()
         setupCloud()
         setupWall()
         setupBird()
+        setupItem()
 
         setupScoreLabel()
         
@@ -81,6 +87,83 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
+    
+    
+    // アイテムのセットアップ
+    func setupItem() {
+        
+        // アイテム三種類の画像を読み込む
+        let itemInfo: [FlappyItem] = [FlappyItem("food_beef_stroganoff_rice", 35, 1),
+                                      FlappyItem("food_oshiruko", 10, 2),
+                                      FlappyItem("food_soboro_don", 5, 3)]
+        
+        // 出現アイテムを１つ選ぶ
+        let selectedItem: FlappyItem = itemInfo[2]
+        
+        let itemTexture:SKTexture = selectedItem.itemImage
+        
+        // 当たり判定ありなので画質優先
+        itemTexture.filteringMode = .linear
+        
+        // 移動距離を計算
+        let movingDistance = CGFloat(self.frame.size.width + itemTexture.size().width)
+        
+        // 画面外まで移動する処理を作成
+        let moveItem = SKAction.moveBy(x: -movingDistance, y: 0, duration: 4)
+        
+        // 自身を取り除く処理を作成
+        let removeItem = SKAction.removeFromParent()
+        
+        // ２つのアニメーションを交互に行うアクションを作成
+        let itemAnimation = SKAction.sequence([moveItem, removeItem])
+        
+        // アイテムの下限位置を決定
+        let groundSize = SKTexture(imageNamed: "ground").size()
+        let item_y_lowest = self.frame.size.height - groundSize.height / 9
+        
+        
+        // 初めのアイテム作成までの時間待ちのアクション(壁と作成タイミングをずらす)
+        let waitForWallAnimation = SKAction.wait(forDuration: 1)
+        
+
+        // アイテムを作成するアクション
+        let createItemAnimation = SKAction.run({
+            // アイテム用ノードの作成
+            let item = SKNode()
+            item.position = CGPoint(x: self.frame.size.width + itemTexture.size().width / 2, y:0)
+            item.zPosition = -50   // 壁と同じ位置
+            
+            // アイテムのY座標をランダムに設定
+            let item_y = CGFloat.random(in: 0..<item_y_lowest)
+            
+            // アイテム作成
+            let itemSprite = SKSpriteNode(texture: itemTexture)
+            item.position = CGPoint(x: 0, y: item_y)
+            
+            // アイテムに物理演算を設定
+            itemSprite.physicsBody = SKPhysicsBody(circleOfRadius: item.frame.size.height / 2)
+            
+            // 衝突の時には動かさせない
+            itemSprite.physicsBody?.isDynamic = false
+            item.addChild(itemSprite)
+            item.run(itemAnimation)
+            self.itemNode.addChild(item)
+            
+                
+        })
+        
+        
+        // 次のアイテム作成までの時間待ちのアクション
+        let waitAnimation = SKAction.wait(forDuration: 2)
+        
+        // アイテム作成->時間待ち->アイテム作成　を繰り返すアクションの作成
+        let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([waitForWallAnimation, createItemAnimation, waitAnimation]))
+
+        itemNode.run(repeatForeverAnimation)
+        
+        
+        
+    }
     
     // 鳥の画像のセットアップ
     func setupBird() {
@@ -379,4 +462,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
+}
+
+
+public class FlappyItem {
+    var itemImage: SKTexture! = nil
+    var appearPosibility: Double! = 0
+    var scorePoint: Int! = 0
+    
+    init(_ imageName:String, _ posibility: Double, _ score: Int){
+        self.itemImage = SKTexture(imageNamed: imageName)
+        self.appearPosibility = posibility
+        self.scorePoint = score
+    }
 }
