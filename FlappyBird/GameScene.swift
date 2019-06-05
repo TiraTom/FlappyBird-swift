@@ -7,6 +7,7 @@
 //
 
 import SpriteKit
+import AVFoundation
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
@@ -20,13 +21,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let groundCategory: UInt32 = 1 << 1
     let wallCategory: UInt32 = 1 << 2
     let scoreCategory: UInt32 = 1 << 3
+    let itemCategory: UInt32 = 1 << 4
     
     // スコア用変数
     var score = 0
+    var itemScore = 0
     let userDefaults:UserDefaults = UserDefaults.standard
     var scoreLabelNode:SKLabelNode!
     var bestScoreLabelNode:SKLabelNode!
-    
+    var itemScoreLabelNode:SKLabelNode!
+
     
     // SKView上にシーンが表示された時に呼ばれるメソッド
     override func didMove(to view: SKView){
@@ -83,7 +87,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bestScoreLabelNode.text = "BEST SCORE:\(bestScore)"
         self.addChild(bestScoreLabelNode)
         
-        
+        itemScore = 0
+        itemScoreLabelNode = SKLabelNode()
+        itemScoreLabelNode.fontColor = .black
+        itemScoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 120)
+        itemScoreLabelNode.zPosition = 100  // いちばん手前で表示する
+        itemScoreLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        itemScoreLabelNode.text = "ITEM SCORE:\(itemScore)"
+        self.addChild(itemScoreLabelNode)
         
     }
     
@@ -132,17 +143,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let item = SKNode()
             item.position = CGPoint(x: self.frame.size.width + itemTexture.size().width / 2, y:0)
             item.zPosition = -50   // 壁と同じ位置
-            
+
             // アイテムのY座標をランダムに設定
             let item_y = CGFloat.random(in: 0..<item_y_lowest)
             
             // アイテム作成
             let itemSprite = SKSpriteNode(texture: itemTexture)
-            item.position = CGPoint(x: 0, y: item_y)
+            let itemScale:CGSize = CGSize(width: SKTexture(imageNamed: "bird_a").size().width, height: SKTexture(imageNamed: "bird_a").size().height)
+            itemSprite.scale(to: itemScale)
+            itemSprite.position = CGPoint(x: 30, y: item_y)
             
             // アイテムに物理演算を設定
-            itemSprite.physicsBody = SKPhysicsBody(circleOfRadius: item.frame.size.height / 2)
+            itemSprite.physicsBody = SKPhysicsBody(circleOfRadius: itemSprite.frame.size.height / 2)
             
+            // 衝突のカテゴリー設定
+            itemSprite.physicsBody?.categoryBitMask = itemCategory
+
             // 衝突の時には動かさせない
             itemSprite.physicsBody?.isDynamic = false
             item.addChild(itemSprite)
@@ -401,19 +417,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
             // スコア用の物体と衝突した
             print("ScoreUp")
-            score += 1
-            scoreLabelNode.text = "SCORE:\(score)"
+            updateScore(type:PointUpType.GoThroughTunnel)
+
             
-            // ベストスコア更新か確認する
-            var bestScore = userDefaults.integer(forKey: "BEST")
-            if score > bestScore {
-                bestScore = score
-                bestScoreLabelNode.text = "BEST SCORE:\(bestScore)"
-                userDefaults.set(bestScore, forKey: "BEST")
-                userDefaults.synchronize()
-            }
+        }
+        else if (contact.bodyA.categoryBitMask & itemCategory) == itemCategory || (contact.bodyB.categoryBitMask & itemCategory) == itemCategory
+        {
+            // アイテムと衝突した
+            print("ItemGet")
+            updateScore(type:PointUpType.GetItem)
             
-        } else {
+            // 音を鳴らす
+            let soundIdRing:SystemSoundID = 1000  // new-mail.caf
+            AudioServicesPlaySystemSound(soundIdRing)
+            
+            // アイテムを消す
+
+        
+        }else {
             // 壁か地面と衝突した
             print("GameOver")
             
@@ -428,6 +449,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             })
         }
         
+    }
+    
+    
+    // スコアの加算、ベストスコアの更新メソッド
+    func updateScore(type:PointUpType) {
+        
+        if type == PointUpType.GoThroughTunnel
+        {
+            score += 1
+            scoreLabelNode.text = "SCORE:\(score)"
+            
+            // ベストスコア更新か確認する
+            var bestScore = userDefaults.integer(forKey: "BEST")
+            if score > bestScore {
+                bestScore = score
+                bestScoreLabelNode.text = "BEST SCORE:\(bestScore)"
+                userDefaults.set(bestScore, forKey: "BEST")
+                userDefaults.synchronize()
+            }
+        }
+        else if type == PointUpType.GetItem
+        {
+            itemScore += 1
+            scoreLabelNode.text = "ITEM SCORE:\(itemScore)"
+        }
     }
     
     
@@ -475,4 +521,11 @@ public class FlappyItem {
         self.appearPosibility = posibility
         self.scorePoint = score
     }
+}
+
+
+// ポイントを獲得する方法
+public enum PointUpType {
+    case GoThroughTunnel
+    case GetItem
 }
