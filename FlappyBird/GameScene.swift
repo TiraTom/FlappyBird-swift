@@ -130,7 +130,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // アイテムの下限位置を決定
         let groundSize = SKTexture(imageNamed: "ground").size()
-        let item_y_lowest = self.frame.size.height - groundSize.height / 9
+        let item_y_lowest = self.frame.size.height - groundSize.height * 2 - SKTexture(imageNamed: "bird_a").size().height * 2
         
         
         // 初めのアイテム作成までの時間待ちのアクション(壁と作成タイミングをずらす)
@@ -157,7 +157,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             itemSprite.physicsBody = SKPhysicsBody(circleOfRadius: itemSprite.frame.size.height / 2)
             
             // 衝突のカテゴリー設定
-            itemSprite.physicsBody?.categoryBitMask = itemCategory
+            itemSprite.physicsBody?.categoryBitMask = self.itemCategory
+            itemSprite.physicsBody?.contactTestBitMask = self.birdCategory
 
             // 衝突の時には動かさせない
             itemSprite.physicsBody?.isDynamic = false
@@ -432,9 +433,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             AudioServicesPlaySystemSound(soundIdRing)
             
             // アイテムを消す
-
-        
-        }else {
+            if (contact.bodyA.categoryBitMask & itemCategory) == itemCategory {
+                contact.bodyA.node?.removeFromParent()
+                self.removeChildren(in: [contact.bodyA.node ?? SKNode()])
+            } else {
+                contact.bodyB.node?.removeFromParent()
+                self.removeChildren(in: [contact.bodyB.node ?? SKNode()])
+            }
+        }
+        else
+        {
             // 壁か地面と衝突した
             print("GameOver")
             
@@ -472,7 +480,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         else if type == PointUpType.GetItem
         {
             itemScore += 1
-            scoreLabelNode.text = "ITEM SCORE:\(itemScore)"
+            itemScoreLabelNode.text = "ITEM SCORE:\(itemScore)"
         }
     }
     
@@ -481,7 +489,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func restart() {
         score = 0
         scoreLabelNode.text = String("SCORE:\(score)")
-        
+        itemScore = 0
+        itemScoreLabelNode.text = String("ITEM SCORE:\(score)")
+
         bird.position = CGPoint(x: self.frame.size.width * 0.2, y: self.frame.size.height * 0.7)
         bird.physicsBody?.velocity = CGVector.zero
         bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
@@ -510,7 +520,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
 }
 
-
+// ポイント加算アイテム
 public class FlappyItem {
     var itemImage: SKTexture! = nil
     var appearPosibility: Double! = 0
